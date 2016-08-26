@@ -1,0 +1,42 @@
+# encoding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require 'yaml'
+
+current_dir = File.dirname(File.expand_path(__FILE__))
+configs = YAML.load_file("#{current_dir}/config.yaml")
+my_config = configs['configs'][configs['configs']['use']]
+
+Vagrant.configure(2) do |config|
+
+  # Base box
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.hostname = my_config['hostname']
+  config.vm.provider :virtualbox do |v|
+      v.name = my_config['vm_name']
+      v.memory = my_config['memory']
+      v.cpus = my_config['cpus']	
+  end
+
+  # config.vm.box_check_update = false
+
+  #  Forwarded ports
+  config.vm.network "forwarded_port", guest: 80, host: my_config['http_port']
+  config.vm.network "forwarded_port", guest: 22, host: my_config['ssh_port']
+  #config.vm.network "forwarded_port", guest: 3306, host: 9906 
+ 
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP.
+  config.vm.network "private_network", ip: my_config['ip_address']
+
+  # Share the data folder and mount it in /data 
+  config.vm.synced_folder my_config['data_folder'], "/data",id: "loris-data",owner: my_config['lorisadmin_uid'],group: my_config['lorisadmin_gid'],	mount_options: ["dmode=775"]
+
+
+  # Enable provisioning with a shell script. 
+  
+  config.vm.provision "shell", path: "installLoris.sh",
+	env: {LORIS_VERSION: my_config['loris_version'], LORIS_URL: my_config['loris_url'], MYSQL_ROOT_PASSWORD: my_config['mysql_root_password'], MYSQL_LORISUSER_PASSWORD: my_config['mysql_lorisuser_password'],LORISADMIN_PASSWORD: my_config['lorisadmin_password'],WEB_ADMIN_PASSWORD: my_config['web_admin_password'],IP_ADDRESS: my_config['ip_address'],HTTP_PORT: my_config['http_port']} 
+
+end
