@@ -2,7 +2,7 @@
 configs:
   use: 'production'
   production: 
-    loris_version: 16.0.2
+    loris_version: v16.1.0
     loris_url: 'http://localhost:6464'
     hostname: 'loris'
     vm_name: 'Loris VM'
@@ -17,7 +17,7 @@ configs:
     lorisadmin_password: changeme
     web_admin_password: changeme
   development:
-    loris_version: 16.1.0
+    loris_version: 17.0-dev
     loris_url: 'http://localhost:6565'
     hostname: 'lorisdev'
     vm_name: 'Loris developement'

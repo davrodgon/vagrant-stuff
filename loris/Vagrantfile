@@ -9,7 +9,9 @@ configs = YAML.load_file("#{current_dir}/config.yaml")
 my_config = configs['configs'][configs['configs']['use']]
 
 Vagrant.configure(2) do |config|
-
+  
+  config.vm.define my_config['vm_name']
+  	
   # Base box
   config.vm.box = "ubuntu/trusty64"
   config.vm.hostname = my_config['hostname']

@@ -57,14 +57,9 @@ expect eof
 echo "$CHANGE_PASSWORD"
 
 echo "Download Loris" 
-wget -o wget-loris.log https://github.com/aces/Loris/archive/v${LORIS_VERSION}.tar.gz
-tar xzf v${LORIS_VERSION}.tar.gz
-
-echo "Move files to /var/www/loris"
-sudo mv Loris-$LORIS_VERSION /var/www/loris
-
-echo "Cleanup"
-rm v${LORIS_VERSION}.tar.gz
+echo "Clone to /var/www/loris"
+sudo apt-get install -y git
+sudo git clone -b $LORIS_VERSION https://github.com/aces/Loris.git /var/www/loris
 
 echo "Change permissions"
 sudo chown 775 /var/www/loris
