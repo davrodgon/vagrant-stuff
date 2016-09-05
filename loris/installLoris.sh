@@ -192,7 +192,11 @@ echo "$INSTALL_IMAGING"
 echo "Source environment in bashrc"
 sudo -u lorisadmin sh -c 'echo "source /data/loris/bin/mri/environment" >> /home/lorisadmin/.bashrc'
 
-echo "Setup daily backups to /data/backups"
-mkdir -p /data/backups
-echo "05 01 * * *  mysqldump -u root -p$MYSQL_ROOT_PASSWORD loris > /data/backup/loris-`date +\%Y\%m\%d`.sql" | crontab
+echo "Setup daily backups to /data/backup"
+cd
+mkdir /home/vagrant/scripts
+echo "mysqldump -u root -p$1 loris > /data/backup/loris-`date +\%Y\%m\%d`.sql" > /home/vagrant/scripts/backup-loris.sh 
+chmod a+x /home/vagrant/scripts/backup-loris.sh
+mkdir -p /data/backup
+echo "05 01 * * *  /home/vagrant/scripts/backup-loris.sh $MYSQL_ROOT_PASSWORD" | crontab
 
