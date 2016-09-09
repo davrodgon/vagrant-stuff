@@ -10,9 +10,7 @@ sudo add-apt-repository ppa:ondrej/php5-5.6
 
 sudo apt-get update
 
-sudo apt-get install -y expect
-
-sudo apt-get install -y apache2 libapache2-mod-php5 libmysqlclient15-dev mysql-client-5.5 mysql-server-5.5 php5 php5-mysql php5-gd php5-sqlite php-pear php5-json
+sudo apt-get install -y expect apache2 libapache2-mod-php5 libmysqlclient15-dev mysql-client-5.5 mysql-server-5.5 php5 php5-mysql php5-gd php5-sqlite php-pear php5-json smarty3
 
 SECURE_MYSQL=$(expect -c "
 set timeout 10
@@ -38,11 +36,13 @@ echo "Install Composer"
 curl -sS https://getcomposer.org/installer | php;
 sudo mv composer.phar /usr/local/bin/composer
 
-sudo apt-get install smarty3
-
 echo "Create lorisadmin user and group"
 sudo groupadd --gid 1002 lorisadmin
 sudo useradd --uid 1002 --gid 1002 -m -G sudo -s /bin/bash lorisadmin
+echo "Adding users to groups"
+sudo usermod -a -G www-data lorisadmin
+sudo usermod -a -G www-data vagrant
+sudo usermod -a -G vagrant apache
 
 CHANGE_PASSWORD=$(expect -c "
 set timeout 10
@@ -127,16 +127,16 @@ echo "Install Images Pipeline"
 echo "Installing dependencies first"
 sudo apt-get install -y libc6 libstdc++6 imagemagick perl
 cd /home/vagrant
-wget -o wget-minc-toolkit.log http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/minc-toolkit-1.0.08-20160205-Ubuntu_14.04-x86_64.deb
-wget -o wget-minc-testsuite.log http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/minc-toolkit-testsuite-0.1.3-20131212.deb
-wget -o wget-beast.log http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/beast-library-1.1.0-20121212.deb
-wget -o wget-models.log http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/bic-mni-models-0.1.1-20120421.deb
+wget -o wget-minc-toolkit.weblog http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/minc-toolkit-1.0.08-20160205-Ubuntu_14.04-x86_64.deb
+wget -o wget-minc-testsuite.weblog http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/minc-toolkit-testsuite-0.1.3-20131212.deb
+wget -o wget-beast.weblog http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/beast-library-1.1.0-20121212.deb
+wget -o wget-models.weblog http://packages.bic.mni.mcgill.ca/minc-toolkit/Debian/bic-mni-models-0.1.1-20120421.deb
 
 sudo dpkg -i minc-toolkit-1.0.08-20160205-Ubuntu_14.04-x86_64.deb minc-toolkit-testsuite-0.1.3-20131212.deb bic-mni-models-0.1.1-20120421.deb beast-library-1.1.0-20121212.deb
 
 sudo apt-get install -f
 echo "Cleanup"
-rm *.deb
+rm *.deb *.weblog
 
 echo "Config MINC toolkit"
 source /opt/minc/minc-toolkit-config.sh
@@ -193,9 +193,8 @@ echo "Source environment in bashrc"
 sudo -u lorisadmin sh -c 'echo "source /data/loris/bin/mri/environment" >> /home/lorisadmin/.bashrc'
 
 echo "Setup daily backups to /data/backup"
-cd
 mkdir /home/vagrant/scripts
-echo "mysqldump -u root -p$1 loris > /data/backup/loris-`date +\%Y\%m\%d`.sql" > /home/vagrant/scripts/backup-loris.sh 
+echo 'mysqldump -u root -p$1 loris | gzip > /data/backup/loris-`date +\%Y\%m\%d`.sql.gz' > /home/vagrant/scripts/backup-loris.sh 
 chmod a+x /home/vagrant/scripts/backup-loris.sh
 mkdir -p /data/backup
 echo "05 01 * * *  /home/vagrant/scripts/backup-loris.sh $MYSQL_ROOT_PASSWORD" | crontab
